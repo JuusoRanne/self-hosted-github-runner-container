@@ -2,9 +2,6 @@ name: Image Build and Push
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-     - 'main'
 
 
 jobs:
@@ -30,6 +27,8 @@ jobs:
               docker build . -t creuwbfcommonsp.azurecr.io/infrastructure/github-runner:${{ github.sha }} \
               --build-arg APP_ID=${{ secrets.APP_ID }} \
               --build-arg APP_PRIVATE_KEY=${{ secrets.APP_PRIVATE_KEY }} \
+              --build-arg GH_OWNER=${{ vars.GH_OWNER }} \
+              --build-arg GH_REPO=${{ vars.GH_REPO }} \
           
           - name: Update CONTAINER_IMAGE_NAME variable
             env:
