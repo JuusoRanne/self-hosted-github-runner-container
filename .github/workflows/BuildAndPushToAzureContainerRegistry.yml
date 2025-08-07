@@ -27,7 +27,9 @@ jobs:
 
           - name: Build and push Docker image
             run: |
-              docker build . -t creuwbfcommonsp.azurecr.io/infrastructure/github-runner:${{ github.sha }}
+              docker build . -t creuwbfcommonsp.azurecr.io/infrastructure/github-runner:${{ github.sha }} \
+              --build-arg APP_ID=${{ secrets.APP_ID }} \
+              --build-arg APP_PRIVATE_KEY=${{ secrets.APP_PRIVATE_KEY }} \
           
           - name: Update CONTAINER_IMAGE_NAME variable
             env:

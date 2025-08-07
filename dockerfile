@@ -2,6 +2,9 @@
 # base image
 FROM ubuntu:24.04
 
+ARG APP_ID
+ARG APP_PRIVATE_KEY
+
 #input GitHub runner version argument
 ENV DEBIAN_FRONTEND=noninteractive
 

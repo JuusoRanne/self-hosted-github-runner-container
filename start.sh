@@ -1,48 +1,82 @@
 #!/bin/bash
-
-# Entrypoint for connecting runner container to Github
-#!/bin/bash
 set -e
 
-# for running this script, remember to pass in follwing arguments:
-# docker run -e GH_TOKEN=... -e GH_OWNER=BusinessFinland -e RUNNER_NAME="my-runner-01"
-
-# Entrypoint for connecting runner container to GitHub
-
 # Validate required environment variables
-if [[ -z "$GH_OWNER" || -z "$GH_TOKEN" ]]; then
-  echo "❌ Error: GH_OWNER and GH_TOKEN must be set as environment variables."
+if [[ -z "$APP_ID" || -z "$APP_PRIVATE_KEY" || -z "$GH_OWNER" ]]; then
+  echo "❌ Error: APP_ID, APP_PRIVATE_KEY, and GH_OWNER must be set as environment variables."
   exit 1
 fi
 
-# Generate unique runner name
+# Function to generate a JWT for the GitHub App
+generate_jwt() {
+  local header='{"alg":"RS256","typ":"JWT"}'
+  local payload="{\"iat\":$(date +%s),\"exp\":$(($(date +%s) + 600)),\"iss\":\"${APP_ID}\"}"
 
-echo "🔧 Registering GitHub Actions runner '${RUNNER_NAME}' for org '${GH_OWNER}'..."
+  # Generate JWT using the private key
+  echo "$(echo -n "${header}" | openssl base64 -A).$(echo -n "${payload}" | openssl base64 -A)" \
+    | tr -d '\n' \
+    | openssl dgst -sha256 -sign <(echo "${APP_PRIVATE_KEY}") \
+    | openssl base64 -A \
+    | tr -d '\n'
+}
+
+# Generate JWT and get installation token for the GitHub App
+echo "🔒 Generating GitHub App JWT..."
+JWT=$(generate_jwt)
+
+# Get the installation ID for the GitHub App
+echo "🔧 Fetching installation ID for owner '${GH_OWNER}'..."
+INSTALLATION_ID=$(curl -s \
+  -H "Authorization: Bearer ${JWT}" \
+  -H "Accept: application/vnd.github+json" \
+  "https://api.github.com/orgs/${GH_OWNER}/installations" \
+  | jq -r '.installations[0].id')
+
+if [[ -z "$INSTALLATION_ID" || "$INSTALLATION_ID" == "null" ]]; then
+  echo "❌ Failed to fetch installation ID. Check the App permissions and GH_OWNER."
+  exit 1
+fi
+
+# Get an installation access token
+echo "🔑 Fetching installation access token..."
+INSTALLATION_TOKEN=$(curl -s \
+  -X POST \
+  -H "Authorization: Bearer ${JWT}" \
+  -H "Accept: application/vnd.github+json" \
+  "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens" \
+  | jq -r '.token')
+
+if [[ -z "$INSTALLATION_TOKEN" || "$INSTALLATION_TOKEN" == "null" ]]; then
+  echo "❌ Failed to fetch installation token. Check the App permissions."
+  exit 1
+fi
 
 # Get org-level registration token
+echo "🔧 Fetching registration token for the self-hosted runner..."
 REG_TOKEN=$(curl -sX POST \
-  -H "Accept: application/vnd.github.v3+json" \
-  -H "Authorization: token ${GH_TOKEN}" \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer ${INSTALLATION_TOKEN}" \
   "https://api.github.com/orgs/${GH_OWNER}/actions/runners/registration-token" \
   | jq -r .token)
 
 if [[ -z "$REG_TOKEN" || "$REG_TOKEN" == "null" ]]; then
-  echo "❌ Failed to fetch registration token. Check GH_TOKEN and GH_OWNER."
+  echo "❌ Failed to fetch registration token. Check the App permissions."
   exit 1
 fi
 
 cd /home/docker/actions-runner
 
-# Configure the runner
+# Configure the GitHub Actions runner
+echo "🔧 Configuring GitHub Actions runner '${RUNNER_NAME}' for org '${GH_OWNER}'..."
 ./config.sh --unattended \
   --url "https://github.com/${GH_OWNER}" \
   --token "${REG_TOKEN}" \
   --name "${RUNNER_NAME}"
 
-# Cleanup function to deregister on stop
+# Cleanup function to deregister runner on stop
 cleanup() {
-    echo "🧹 Removing runner..."
-    ./config.sh remove --unattended --token "${REG_TOKEN}"
+  echo "🧹 Removing runner..."
+  ./config.sh remove --unattended --token "${REG_TOKEN}"
 }
 
 trap 'cleanup; exit 130' INT
@@ -50,4 +84,3 @@ trap 'cleanup; exit 143' TERM
 
 echo "✅ Runner '${RUNNER_NAME}' registered and starting..."
 ./run.sh & wait $!
-
