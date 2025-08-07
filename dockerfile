@@ -28,8 +28,8 @@ RUN set -eux; \
     RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/^v//'); \
     mkdir -p /home/docker/actions-runner; \
     cd /home/docker/actions-runner; \
-    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz; \
-    tar xzf actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz
+    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz; \
+    tar xzf actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
 
     # Remember to change arm64 to x64 if you are not using an ARM architecture
 
