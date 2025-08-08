@@ -45,7 +45,7 @@ jobs:
         run: terraform validate
 
       - name: Plan Terraform
-        run: terraform -var-file=terraform/env/prod.tfvars plan 
+        run: terraform plan -var-file=terraform/env/prod.tfvars 
         
 
   terraform_apply_prod:
