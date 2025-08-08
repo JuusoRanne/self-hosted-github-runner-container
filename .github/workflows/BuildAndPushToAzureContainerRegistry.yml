@@ -53,7 +53,7 @@ jobs:
                 curl -X PATCH \
                 -H "Authorization: Bearer $INSTALLATION_TOKEN" \
                 -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/$TARGET_REPO_NAME/actions/variables/CONTAINER_IMAGE_NAME_DEV" \
+                "https://api.github.com/repos/$TARGET_REPO_NAME/actions/variables/CONTAINER_IMAGE_NAME" \
                 -d "{\"value\":\"${{ github.sha }}\"}" \
                 || { echo "Failed to update variable"; exit 1; }
 
