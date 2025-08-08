@@ -95,7 +95,7 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
     min_replicas = 1
     container {
       name   = "self-hosted-gh-runner"
-      image  = "${var.acr_login_server}/sharedservices/bookings:${var.acr_tag}"
+      image  = "${var.acr_login_server}/infrastructure/github-runner:${var.acr_tag}"
       cpu    = var.container_cpu
       memory = var.container_memory
     }

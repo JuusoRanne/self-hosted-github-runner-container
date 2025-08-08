@@ -55,3 +55,15 @@ variable "acr_tag" {
   description = "The tag for the Azure Container Registry"
   type        = string
 }
+
+variable "container_cpu" {
+  description = "The CPU value for librechat container"
+  type = number
+  default = 0.5
+}
+
+variable "container_memory" {
+  description = "The memory value for librechat container"
+  type = string
+  default = "1.5Gi"
+}
