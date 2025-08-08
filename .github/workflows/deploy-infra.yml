@@ -11,9 +11,6 @@ jobs:
   terraform_plan_prod:
     runs-on: ubuntu-latest
 
-    environment:
-      name: prod
-
     env:
       IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME}}
       TF_VAR_acr_login_server: ${{ secrets.ACR_LOGIN_SERVER }}
@@ -55,8 +52,6 @@ jobs:
     needs: terraform_plan_prod
     runs-on: ubuntu-latest
 
-    environment:
-      name: prod
 
     env:
       TF_VAR_graph_api_azure_client_secret: ${{ secrets.GRAPH_API_AZURE_CLIENT_SECRET_DEV }}
