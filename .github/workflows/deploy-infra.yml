@@ -39,13 +39,13 @@ jobs:
         run: |
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
-          terraform init -upgrade -backend-config="terraform/backend-prod.tfvars"
+          terraform init -upgrade -backend-config=terraform/backend-prod.tfvars
 
       - name: Validate Terraform
         run: terraform validate
 
       - name: Plan Terraform
-        run: terraform -var-file="terraform/env/prod.tfvars" plan 
+        run: terraform -var-file=terraform/env/prod.tfvars plan 
         
 
   terraform_apply_prod:
@@ -86,7 +86,7 @@ jobs:
         run: |
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
-          terraform init -upgrade -backend-config="terraform/backend-prod.tfvars"
+          terraform init -upgrade -backend-config=terraform/backend-prod.tfvars
 
       - name: Apply Terraform 
-        run : terraform apply -var-file="terraform/env/prod.tfvars" -auto-approve 
+        run : terraform apply -var-file=terraform/env/prod.tfvars -auto-approve 
