@@ -4,9 +4,16 @@ FROM ubuntu:24.04
 
 ARG APP_ID
 ARG APP_PRIVATE_KEY
+ARG GH_OWNER
+ARG RUNNER_NAME
 
 #input GitHub runner version argument
+
 ENV DEBIAN_FRONTEND=noninteractive
+ENV APP_ID=$APP_ID
+ENV APP_PRIVATE_KEY=$APP_PRIVATE_KEY
+ENV GH_OWNER=$GH_OWNER
+ENV RUNNER_NAME=$RUNNER_NAME
 
 # update the base packages + add a non-sudo user
 RUN apt-get update -y && apt-get upgrade -y && useradd -m docker
