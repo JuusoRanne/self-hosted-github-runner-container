@@ -57,7 +57,7 @@ jobs:
       TF_VAR_graph_api_azure_client_secret: ${{ secrets.GRAPH_API_AZURE_CLIENT_SECRET_DEV }}
       IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME}}
       TF_VAR_acr_login_server: ${{ vars.REGISTRY_LOGIN_SERVER }}
-      TF_VAR_acr_tag: ${{ vars.CONTAINER_IMAGE_NAME_PROD }}
+      TF_VAR_acr_tag: ${{ vars.CONTAINER_IMAGE_NAME }}
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_PROD }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID_PROD }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
