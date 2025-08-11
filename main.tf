@@ -78,7 +78,7 @@ resource "azurerm_container_app_environment" "container_app_environment" {
 }
 
 resource "azurerm_container_app" "self_hosted_git_runner" {
-  name                         = "ca-euw-${var.app_name}-${var.environment}"
+  name                         = "ca-euw-ghrunner-${var.environment}"
   container_app_environment_id = azurerm_container_app_environment.container_app_environment.id
   resource_group_name          = module.resource_group.name
   revision_mode                = "Single"
