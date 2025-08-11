@@ -43,7 +43,7 @@ resource "azurerm_subnet" "subnet1" {
 }
 
 resource "azurerm_storage_account" "storage_account" {
-  name                     = replace("st${var.app_name}${var.environment}euw", -" ", "")
+  name                     = lower(replace("saeuw${var.app_name}-${var.environment}", "-", ""))
   resource_group_name      = module.resource_group.name
   location                 = module.resource_group.location
   account_tier             = "Standard"
