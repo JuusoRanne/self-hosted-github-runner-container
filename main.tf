@@ -60,6 +60,12 @@ resource "azurerm_storage_queue" "storage_queue" {
   metadata             = var.tags
 }
 
+resource "azurerm_role_assignment" "storage_queue_data_contributor" {
+  scope                = azurerm_storage_account.storage_account.id
+  role_definition_name = "Storage Queue Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.managed_identity.principal_id
+}
+
 resource "azurerm_container_app_environment" "container_app_environment" {
   name                               = "cae-euw-${var.app_name}-${var.environment}"
   resource_group_name                = module.resource_group.name
@@ -93,7 +99,20 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
   }
 
   template {
-    min_replicas = 1
+    min_replicas = 0
+    max_replicas = 10
+    
+    azure_queue_scale_rule {
+      name         = "gh-runner-queue-scale"
+      queue_name   = azurerm_storage_queue.storage_queue.name
+      queue_length = 1
+      
+      authentication {
+        trigger_parameter = "accountName"
+        secret_name       = "storage-account-name"
+      }
+    }
+    
     container {
       name   = "self-hosted-gh-runner"
       image  = "${var.acr_login_server}/infrastructure/github-runner:${var.acr_tag}"
@@ -120,8 +139,11 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
         value = var.gh_owner
       }
     }
-
-
+  }
+  
+  secret {
+    name  = "storage-account-name"
+    value = azurerm_storage_account.storage_account.name
   }
   depends_on = [azurerm_container_app_environment.container_app_environment]
 }

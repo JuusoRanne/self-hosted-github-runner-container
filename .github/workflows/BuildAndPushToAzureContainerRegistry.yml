@@ -64,13 +64,6 @@ jobs:
                 -d "{\"value\":\"${{ github.sha }}\"}" \
                 || { echo "Failed to update CONTAINER_IMAGE_NAME variable"; exit 1; }
 
-                # Update RUNNER_VERSION variable
-                curl -X PATCH \
-                -H "Authorization: Bearer $INSTALLATION_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/$TARGET_REPO_NAME/actions/variables/RUNNER_VERSION" \
-                -d "{\"value\":\"${{ steps.get_runner_version.outputs.version }}\"}" \
-                || { echo "Failed to update RUNNER_VERSION variable"; exit 1; }
 
 
           - name: Trigger Deployment Workflow
