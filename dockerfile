@@ -4,7 +4,18 @@ FROM ubuntu:24.04
 
 #input GitHub runner version argument
 
+# Build arguments for local development
+ARG GH_OWNER
+ARG APP_ID
+ARG APP_PRIVATE_KEY
+ARG RUNNER_NAME
+
 ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variables from build args
+ENV GH_OWNER=${GH_OWNER}
+ENV APP_ID=${APP_ID}
+ENV APP_PRIVATE_KEY=${APP_PRIVATE_KEY}
+ENV RUNNER_NAME=${RUNNER_NAME}
 # update the base packages + add a non-sudo user
 RUN apt-get update -y && apt-get upgrade -y && useradd -m docker
 
@@ -20,15 +31,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 
-# Install GitHub Actions runner (latest)
+# Install GitHub Actions runner (using version from build arg)
+ARG GITHUB_RUNNER_VERSION
+ARG TARGETPLATFORM
 RUN set -eux; \
-    RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/^v//'); \
+    echo "Runner version: ${GITHUB_RUNNER_VERSION}"; \
+    echo "Target platform: ${TARGETPLATFORM}"; \
+    [ ! -z "$GITHUB_RUNNER_VERSION" ] || (echo "GITHUB_RUNNER_VERSION build arg is required" && exit 1); \
     mkdir -p /home/docker/actions-runner; \
     cd /home/docker/actions-runner; \
-    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz; \
-    tar xzf actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
-
-    # Remember to change arm64 to x64 if you are not using an ARM architecture
+    if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        ARCH="arm64"; \
+    else \
+        ARCH="x64"; \
+    fi; \
+    echo "Using architecture: ${ARCH}"; \
+    curl -O -L https://github.com/actions/runner/releases/download/v${GITHUB_RUNNER_VERSION}/actions-runner-linux-${ARCH}-${GITHUB_RUNNER_VERSION}.tar.gz; \
+    tar xzf actions-runner-linux-${ARCH}-${GITHUB_RUNNER_VERSION}.tar.gz
 
 
 # add over the start.sh script

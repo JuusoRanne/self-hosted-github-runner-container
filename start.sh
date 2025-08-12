@@ -11,13 +11,13 @@ fi
 generate_jwt() {
   local header='{"alg":"RS256","typ":"JWT"}'
   local payload="{\"iat\":$(date +%s),\"exp\":$(($(date +%s) + 600)),\"iss\":\"${APP_ID}\"}"
-
-  # Generate JWT using the private key
-  echo "$(echo -n "${header}" | openssl base64 -A).$(echo -n "${payload}" | openssl base64 -A)" \
-    | tr -d '\n' \
-    | openssl dgst -sha256 -sign <(echo "${APP_PRIVATE_KEY}") \
-    | openssl base64 -A \
-    | tr -d '\n'
+  
+  local header_b64=$(echo -n "${header}" | openssl base64 -e -A | tr -d '=')
+  local payload_b64=$(echo -n "${payload}" | openssl base64 -e -A | tr -d '=')
+  
+  local signature=$(echo -n "${header_b64}.${payload_b64}" | openssl dgst -sha256 -sign <(echo "${APP_PRIVATE_KEY}") | openssl base64 -e -A | tr -d '=' | tr '/+' '_-')
+  
+  echo "${header_b64}.${payload_b64}.${signature}"
 }
 
 # Generate JWT and get installation token for the GitHub App
@@ -29,8 +29,8 @@ echo "🔧 Fetching installation ID for owner '${GH_OWNER}'..."
 INSTALLATION_ID=$(curl -s \
   -H "Authorization: Bearer ${JWT}" \
   -H "Accept: application/vnd.github+json" \
-  "https://api.github.com/orgs/${GH_OWNER}/installations" \
-  | jq -r '.installations[0].id')
+  "https://api.github.com/app/installations" \
+  | jq -r --arg owner "${GH_OWNER}" '.[] | select(.account.login == $owner) | .id')
 
 if [[ -z "$INSTALLATION_ID" || "$INSTALLATION_ID" == "null" ]]; then
   echo "❌ Failed to fetch installation ID. Check the App permissions and GH_OWNER."
