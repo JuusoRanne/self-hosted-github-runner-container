@@ -7,14 +7,12 @@ FROM ubuntu:24.04
 # Build arguments for local development
 ARG GH_OWNER
 ARG APP_ID
-ARG APP_PRIVATE_KEY
 ARG RUNNER_NAME
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Set environment variables from build args
 ENV GH_OWNER=${GH_OWNER}
 ENV APP_ID=${APP_ID}
-ENV APP_PRIVATE_KEY=${APP_PRIVATE_KEY}
 ENV RUNNER_NAME=${RUNNER_NAME}
 # update the base packages + add a non-sudo user
 RUN apt-get update -y && apt-get upgrade -y && useradd -m docker
