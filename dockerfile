@@ -32,12 +32,12 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 
 # Install GitHub Actions runner (using version from build arg)
-ARG GITHUB_RUNNER_VERSION
+ARG RUNNER_VERSION
 ARG TARGETPLATFORM
 RUN set -eux; \
-    echo "Runner version: ${GITHUB_RUNNER_VERSION}"; \
+    echo "Runner version: ${RUNNER_VERSION}"; \
     echo "Target platform: ${TARGETPLATFORM}"; \
-    [ ! -z "$GITHUB_RUNNER_VERSION" ] || (echo "GITHUB_RUNNER_VERSION build arg is required" && exit 1); \
+    [ ! -z "$RUNNER_VERSION" ] || (echo "RUNNER_VERSION build arg is required" && exit 1); \
     mkdir -p /home/docker/actions-runner; \
     cd /home/docker/actions-runner; \
     if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
@@ -46,8 +46,8 @@ RUN set -eux; \
         ARCH="x64"; \
     fi; \
     echo "Using architecture: ${ARCH}"; \
-    curl -O -L https://github.com/actions/runner/releases/download/v${GITHUB_RUNNER_VERSION}/actions-runner-linux-${ARCH}-${GITHUB_RUNNER_VERSION}.tar.gz; \
-    tar xzf actions-runner-linux-${ARCH}-${GITHUB_RUNNER_VERSION}.tar.gz
+    curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz; \
+    tar xzf actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz
 
 
 # add over the start.sh script
