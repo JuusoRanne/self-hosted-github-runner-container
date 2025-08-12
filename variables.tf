@@ -67,3 +67,25 @@ variable "container_memory" {
   type = string
   default = "1.0Gi"
 }
+
+variable "app_id" {
+  description = "GitHub App ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "app_private_key" {
+  description = "GitHub App private key"
+  type        = string
+  sensitive   = true
+}
+
+variable "runner_name" {
+  description = "Name for the GitHub runner instance"
+  type        = string
+}
+
+variable "gh_owner" {
+  description = "GitHub organization name"
+  type        = string
+}

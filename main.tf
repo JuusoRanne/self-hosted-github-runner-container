@@ -99,6 +99,26 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
       image  = "${var.acr_login_server}/infrastructure/github-runner:${var.acr_tag}"
       cpu    = var.container_cpu
       memory = var.container_memory
+
+      env {
+        name  = "APP_ID"
+        value = var.app_id
+      }
+
+      env {
+        name  = "APP_PRIVATE_KEY"
+        value = var.app_private_key
+      }
+
+      env {
+        name  = "RUNNER_NAME"
+        value = var.runner_name
+      }
+
+      env {
+        name  = "GH_OWNER"
+        value = var.gh_owner
+      }
     }
 
 
