@@ -79,7 +79,33 @@ echo "🔧 Configuring GitHub Actions runner '${UNIQUE_RUNNER_NAME}' for org '${
 # Cleanup function to deregister runner on stop
 cleanup() {
   echo "🧹 Removing runner..."
-  ./config.sh remove --unattended --token "${REG_TOKEN}"
+  
+  # Generate fresh JWT and get new installation token for removal
+  local cleanup_jwt=$(generate_jwt)
+  local cleanup_token=$(curl -s \
+    -X POST \
+    -H "Authorization: Bearer ${cleanup_jwt}" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens" \
+    | jq -r '.token')
+  
+  if [[ -n "$cleanup_token" && "$cleanup_token" != "null" ]]; then
+    # Get fresh removal token
+    local removal_token=$(curl -sX POST \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer ${cleanup_token}" \
+      "https://api.github.com/orgs/${GH_OWNER}/actions/runners/remove-token" \
+      | jq -r .token)
+    
+    if [[ -n "$removal_token" && "$removal_token" != "null" ]]; then
+      ./config.sh remove --unattended --token "${removal_token}"
+      echo "✅ Runner removed successfully"
+    else
+      echo "⚠️ Failed to get removal token, runner may remain registered"
+    fi
+  else
+    echo "⚠️ Failed to get cleanup token, runner may remain registered"  
+  fi
 }
 
 trap 'cleanup; exit 130' INT
@@ -89,3 +115,6 @@ echo "✅ Runner '${UNIQUE_RUNNER_NAME}' registered and starting..."
 
 # Run the GitHub Actions runner and exit after one job
 ./run.sh --once
+
+# Cleanup after normal completion
+cleanup
