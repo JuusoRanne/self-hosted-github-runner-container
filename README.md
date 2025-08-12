@@ -11,6 +11,7 @@ The solution consists of:
 - **GitHub App Authentication**: Secure runner registration using JWT tokens
 - **Azure Virtual Network**: Isolated networking with delegated subnet for Container Apps
 - **Azure Storage Account**: Queue storage for potential custom scaling triggers
+- **Automated CI/CD**: Weekly builds and infrastructure updates via GitHub Actions
 
 ## Prerequisites
 
@@ -49,14 +50,12 @@ Add the following secrets to your GitHub repository:
 #### Required Secrets
 | Secret Name | Description | Example |
 |-------------|-------------|---------|
-| `APP_ID` | GitHub App ID | `123456` |
 | `APP_PRIVATE_KEY` | GitHub App private key (RSA format) | `-----BEGIN RSA PRIVATE KEY-----\n...` |
 | `AZURE_CLIENT_ID_PROD` | Azure Service Principal Client ID | `12345678-1234-1234-1234-123456789012` |
 | `AZURE_SUBSCRIPTION_ID_PROD` | Azure Subscription ID | `12345678-1234-1234-1234-123456789012` |
 | `AZURE_TENANT_ID` | Azure Tenant ID | `12345678-1234-1234-1234-123456789012` |
 | `REGISTRY_USERNAME` | Azure Container Registry username | `service-principal-id` |
 | `REGISTRY_PASSWORD` | Azure Container Registry password | `service-principal-secret` |
-| `ACTIONS_DEPLOY_KEY_PRIVATE` | SSH private key for accessing Terraform modules | `-----BEGIN OPENSSH PRIVATE KEY-----\n...` |
 
 ### 3. Configure GitHub Variables
 
@@ -65,31 +64,31 @@ Add the following variables to your GitHub repository:
 #### Required Variables
 | Variable Name | Description | Example |
 |---------------|-------------|---------|
+| `APP_ID` | GitHub App ID | `123456` |
 | `CONTAINER_IMAGE_NAME` | Container image tag (auto-updated by workflow) | `abc123def456` |
-| `REGISTRY_LOGIN_SERVER` | Azure Container Registry URL | `myregistry.azurecr.io` |
+| `REGISTRY_LOGIN_SERVER` | Azure Container Registry URL | `creuwbfcommonsp.azurecr.io` |
 | `RUNNER_NAME` | Name for the runner instance | `azure-runner-prod-001` |
-| `GH_OWNER` | GitHub organization or username | `myorg` |
-| `RUNNER_VERSION` | GitHub Actions runner version (auto-updated) | `2.311.0` |
+| `GH_OWNER` | GitHub organization or username | `businessfinland` |
 
 ### 4. Update Terraform Variables
 
 Edit `env/prod.tfvars` with your specific values:
 
 ```hcl
-app_name = "your-app-name"
+app_name = "self-hosted-gh-runner"
 environment = "prod"
 location_short = "euw"  # West Europe
 
 # Update tags with your organization details
 tags = {
   "application_purpose" = "Self-hosted GitHub Runner"
-  "business_owner" = "your.email@company.com"
-  "cost_centre" = 1234
-  "creator" = "Your Name"
-  "environment" = "Production"
-  "owner" = "your.email@company.com"
+  "business_owner" = "juuso.ranne@businessfinland.fi"
+  "cost_centre" = 9606
+  "creator" = "Juuso Ranne"
+  "environment" = "Development"
+  "owner" = "juuso.ranne@businessfinland.fi"
   "partner" = "N/A"
-  "project_name" = "GitHub Runner Infrastructure"
+  "project_name" = ""
 }
 
 # Network configuration (adjust as needed)
@@ -114,9 +113,11 @@ key                  = "github-runner/terraform.tfstate"
 
 The repository includes GitHub Actions workflows for automated deployment:
 
-1. **Build and Push Container**: Manually trigger the "Image Build and Push" workflow
+1. **Build and Push Container**: "Image Build and Push" workflow
+   - **Manual trigger**: Via workflow_dispatch 
+   - **Scheduled**: Weekly on Monday at 2:00 AM UTC
    - Builds latest container image with current GitHub Actions runner version
-   - Pushes to Azure Container Registry
+   - Pushes to Azure Container Registry with commit SHA as tag
    - Updates repository variables with new image tag
    - Automatically triggers infrastructure deployment
 
@@ -136,10 +137,10 @@ RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/la
 docker build . \
   --platform linux/amd64 \
   --build-arg RUNNER_VERSION=$RUNNER_VERSION \
-  -t your-registry.azurecr.io/infrastructure/github-runner:latest
+  -t creuwbfcommonsp.azurecr.io/infrastructure/github-runner:latest
 
 # Push to registry
-docker push your-registry.azurecr.io/infrastructure/github-runner:latest
+docker push creuwbfcommonsp.azurecr.io/infrastructure/github-runner:latest
 ```
 
 #### Step 2: Deploy Infrastructure
@@ -186,10 +187,10 @@ Monitor your runner through:
 
 The container requires these environment variables (automatically set by Terraform):
 
-- `APP_ID`: GitHub App ID
-- `APP_PRIVATE_KEY`: GitHub App private key
-- `GH_OWNER`: GitHub organization name  
-- `RUNNER_NAME`: Unique runner instance name
+- `APP_ID`: GitHub App ID (passed from GitHub variable)
+- `APP_PRIVATE_KEY`: GitHub App private key (passed from GitHub secret)
+- `GH_OWNER`: GitHub organization name (passed from GitHub variable)
+- `RUNNER_NAME`: Unique runner instance name (passed from GitHub variable)
 
 ### Resource Allocation
 
