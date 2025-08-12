@@ -66,12 +66,15 @@ fi
 
 cd /home/docker/actions-runner
 
+# Generate unique runner name with timestamp and random suffix
+UNIQUE_RUNNER_NAME="${RUNNER_NAME}-$(date +%s)-$(openssl rand -hex 4)"
+
 # Configure the GitHub Actions runner
-echo "🔧 Configuring GitHub Actions runner '${RUNNER_NAME}' for org '${GH_OWNER}'..."
+echo "🔧 Configuring GitHub Actions runner '${UNIQUE_RUNNER_NAME}' for org '${GH_OWNER}'..."
 ./config.sh --unattended \
   --url "https://github.com/${GH_OWNER}" \
   --token "${REG_TOKEN}" \
-  --name "${RUNNER_NAME}"
+  --name "${UNIQUE_RUNNER_NAME}"
 
 # Cleanup function to deregister runner on stop
 cleanup() {
@@ -82,7 +85,7 @@ cleanup() {
 trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 143' TERM
 
-echo "✅ Runner '${RUNNER_NAME}' registered and starting..."
+echo "✅ Runner '${UNIQUE_RUNNER_NAME}' registered and starting..."
 
 # Run the GitHub Actions runner and exit after one job
 ./run.sh --once

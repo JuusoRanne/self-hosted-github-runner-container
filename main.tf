@@ -42,29 +42,6 @@ resource "azurerm_subnet" "subnet1" {
   depends_on = [azurerm_virtual_network.virtual_network]
 }
 
-resource "azurerm_storage_account" "storage_account" {
-  name                     = "saeuwghrunnerp"
-  resource_group_name      = module.resource_group.name
-  location                 = module.resource_group.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  infrastructure_encryption_enabled = true
-
-  tags = var.tags
-
-}
-
-resource "azurerm_storage_queue" "storage_queue" {
-  name                 = "gh-runner-scaler"
-  storage_account_name = azurerm_storage_account.storage_account.name
-  metadata             = var.tags
-}
-
-resource "azurerm_role_assignment" "storage_queue_data_contributor" {
-  scope                = azurerm_storage_account.storage_account.id
-  role_definition_name = "Storage Queue Data Contributor"
-  principal_id         = azurerm_user_assigned_identity.managed_identity.principal_id
-}
 
 resource "azurerm_container_app_environment" "container_app_environment" {
   name                               = "cae-euw-${var.app_name}-${var.environment}"
@@ -99,19 +76,8 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
   }
 
   template {
-    min_replicas = 0
+    min_replicas = 1
     max_replicas = 10
-    
-    azure_queue_scale_rule {
-      name         = "gh-runner-queue-scale"
-      queue_name   = azurerm_storage_queue.storage_queue.name
-      queue_length = 1
-      
-      authentication {
-        trigger_parameter = "accountName"
-        secret_name       = "storage-account-name"
-      }
-    }
     
     container {
       name   = "self-hosted-gh-runner"
@@ -141,9 +107,5 @@ resource "azurerm_container_app" "self_hosted_git_runner" {
     }
   }
   
-  secret {
-    name  = "storage-account-name"
-    value = azurerm_storage_account.storage_account.name
-  }
   depends_on = [azurerm_container_app_environment.container_app_environment]
 }
