@@ -20,8 +20,8 @@ jobs:
       TF_VAR_app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
       TF_VAR_runner_name: ${{ vars.RUNNER_NAME }}
       TF_VAR_gh_owner: ${{ vars.GH_OWNER }}
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true 
 
@@ -67,8 +67,8 @@ jobs:
       TF_VAR_app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
       TF_VAR_runner_name: ${{ vars.RUNNER_NAME }}
       TF_VAR_gh_owner: ${{ vars.GH_OWNER }}
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true 
 

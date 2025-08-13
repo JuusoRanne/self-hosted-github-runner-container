@@ -51,8 +51,6 @@ Add the following secrets to your GitHub repository:
 | Secret Name | Description | Example |
 |-------------|-------------|---------|
 | `APP_PRIVATE_KEY` | GitHub App private key (RSA format) | `-----BEGIN RSA PRIVATE KEY-----\n...` |
-| `AZURE_CLIENT_ID_PROD` | Azure Service Principal Client ID | `12345678-1234-1234-1234-123456789012` |
-| `AZURE_SUBSCRIPTION_ID_PROD` | Azure Subscription ID | `12345678-1234-1234-1234-123456789012` |
 | `AZURE_TENANT_ID` | Azure Tenant ID | `12345678-1234-1234-1234-123456789012` |
 | `REGISTRY_USERNAME` | Azure Container Registry username | `service-principal-id` |
 | `REGISTRY_PASSWORD` | Azure Container Registry password | `service-principal-secret` |
@@ -65,6 +63,8 @@ Add the following variables to your GitHub repository:
 | Variable Name | Description | Example |
 |---------------|-------------|---------|
 | `APP_ID` | GitHub App ID | `123456` |
+| `AZURE_CLIENT_ID` | Azure Service Principal Client ID | `12345678-1234-1234-1234-123456789012` |
+| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | `12345678-1234-1234-1234-123456789012` |
 | `CONTAINER_IMAGE_NAME` | Container image tag (auto-updated by workflow) | `abc123def456` |
 | `REGISTRY_LOGIN_SERVER` | Azure Container Registry URL | `yourregistry.azurecr.io` |
 | `RUNNER_NAME` | Name for the runner instance | `azure-runner-prod-001` |
