@@ -31,18 +31,12 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Install GitHub Actions runner (using version from build arg)
 ARG RUNNER_VERSION
-ARG TARGETPLATFORM
 RUN set -eux; \
     echo "Runner version: ${RUNNER_VERSION}"; \
-    echo "Target platform: ${TARGETPLATFORM}"; \
     [ ! -z "$RUNNER_VERSION" ] || (echo "RUNNER_VERSION build arg is required" && exit 1); \
     mkdir -p /home/docker/actions-runner; \
     cd /home/docker/actions-runner; \
-    if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        ARCH="arm64"; \
-    else \
-        ARCH="x64"; \
-    fi; \
+    ARCH="x64"; \
     echo "Using architecture: ${ARCH}"; \
     curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz; \
     tar xzf actions-runner-linux-${ARCH}-${RUNNER_VERSION}.tar.gz
