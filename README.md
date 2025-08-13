@@ -40,7 +40,7 @@ Your GitHub App needs the following permissions:
 
 ```bash
 git clone <repository-url>
-cd bf-self-hosted-github-runner
+cd self-hosted-github-runner
 ```
 
 ### 2. Configure GitHub Secrets
@@ -66,29 +66,24 @@ Add the following variables to your GitHub repository:
 |---------------|-------------|---------|
 | `APP_ID` | GitHub App ID | `123456` |
 | `CONTAINER_IMAGE_NAME` | Container image tag (auto-updated by workflow) | `abc123def456` |
-| `REGISTRY_LOGIN_SERVER` | Azure Container Registry URL | `creuwbfcommonsp.azurecr.io` |
+| `REGISTRY_LOGIN_SERVER` | Azure Container Registry URL | `yourregistry.azurecr.io` |
 | `RUNNER_NAME` | Name for the runner instance | `azure-runner-prod-001` |
-| `GH_OWNER` | GitHub organization or username | `businessfinland` |
+| `GH_OWNER` | GitHub organization or username | `your-organization` |
 
 ### 4. Update Terraform Variables
 
-Edit `env/prod.tfvars` with your specific values:
+Edit `env/example.tfvars` with your specific values:
 
 ```hcl
 app_name = "self-hosted-gh-runner"
 environment = "prod"
 location_short = "euw"  # West Europe
 
-# Update tags with your organization details
+# Your environment specific tags should go here
 tags = {
   "application_purpose" = "Self-hosted GitHub Runner"
-  "business_owner" = "juuso.ranne@businessfinland.fi"
-  "cost_centre" = 9606
-  "creator" = "Juuso Ranne"
-  "environment" = "Development"
-  "owner" = "juuso.ranne@businessfinland.fi"
-  "partner" = "N/A"
-  "project_name" = ""
+  "creator" = ""
+  "environment" = ""
 }
 
 # Network configuration (adjust as needed)
@@ -98,7 +93,7 @@ subnet_address_prefix = ["10.0.0.0/24"]
 
 ### 5. Configure Terraform Backend
 
-Update `backend-prod.tfvars` with your Terraform state storage details:
+Update `backend.tfvars` with your Terraform state storage details:
 
 ```hcl
 resource_group_name  = "your-terraform-state-rg"
@@ -124,37 +119,6 @@ The repository includes GitHub Actions workflows for automated deployment:
 2. **Deploy Infrastructure**: Automatically triggered after image build
    - Runs Terraform plan and apply
    - Deploys/updates Azure resources
-
-### Manual Deployment
-
-#### Step 1: Build and Push Container Image
-
-```bash
-# Get latest GitHub Actions runner version
-RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-
-# Build container image
-docker build . \
-  --platform linux/amd64 \
-  --build-arg RUNNER_VERSION=$RUNNER_VERSION \
-  -t creuwbfcommonsp.azurecr.io/infrastructure/github-runner:latest
-
-# Push to registry
-docker push creuwbfcommonsp.azurecr.io/infrastructure/github-runner:latest
-```
-
-#### Step 2: Deploy Infrastructure
-
-```bash
-# Initialize Terraform
-terraform init -upgrade -backend-config=backend-prod.tfvars
-
-# Plan deployment
-terraform plan -var-file=env/prod.tfvars
-
-# Apply changes
-terraform apply -var-file=env/prod.tfvars -auto-approve
-```
 
 ## Usage
 
@@ -198,13 +162,6 @@ Default resource allocation (configurable in `variables.tf`):
 - **CPU**: 0.5 cores
 - **Memory**: 1.0 GiB
 
-## Security Considerations
-
-- GitHub App private key is stored securely as a GitHub secret
-- Runner uses organization-level registration (not personal access tokens)
-- Azure resources are deployed with managed identity authentication
-- Network isolation through dedicated virtual network
-- Container runs with least-privilege access
 
 ## Troubleshooting
 
@@ -225,30 +182,3 @@ Default resource allocation (configurable in `variables.tf`):
    - Check resource naming conflicts
    - Review Terraform state file location
 
-### Useful Commands
-
-```bash
-# Check runner status
-az containerapp logs show --resource-group <rg-name> --name <app-name>
-
-# Restart container app
-az containerapp revision restart --resource-group <rg-name> --name <app-name>
-
-# View Terraform state
-terraform show
-
-# Force unlock Terraform state (if needed)
-terraform force-unlock <lock-id>
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

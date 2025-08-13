@@ -1,33 +1,29 @@
-module "resource_group" {
-  source         = "git@github.com:BusinessFinland/bf-terraform-modules.git//resource_group?ref=main"
-  app_name       = var.app_name
-  environment    = var.environment
-  location_short = var.location_short
-  location       = var.location
-  tags           = var.tags
-
+resource "azurerm_resource_group" "main" {
+  name     = "rg-${var.location_short}-${var.app_name}-${var.environment}"
+  location = var.location
+  tags     = var.tags
 }
 resource "azurerm_user_assigned_identity" "managed_identity" {
-  location            = module.resource_group.location
-  name                = "mi-euw-${var.app_name}-${var.environment}"
-  resource_group_name = module.resource_group.name
+  location            = azurerm_resource_group.main.location
+  name                = "mi-${var.location_short}-${var.app_name}-${var.environment}"
+  resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_virtual_network" "virtual_network" {
-  name                = "vn-euw-${var.app_name}-${var.environment}"
-  resource_group_name = module.resource_group.name
-  location            = module.resource_group.location
+  name                = "vn-${var.location_short}-${var.app_name}-${var.environment}"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
   address_space       = var.vnet_address_space
 
   tags = var.tags
 
-  depends_on = [module.resource_group]
+  depends_on = [azurerm_resource_group.main]
 
 }
 
 resource "azurerm_subnet" "subnet1" {
-  name                 = "subnet-euw-${var.app_name}-${var.environment}"
-  resource_group_name  = module.resource_group.name
+  name                 = "subnet-${var.location_short}-${var.app_name}-${var.environment}"
+  resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.virtual_network.name
   address_prefixes     = var.subnet_address_prefix
 
@@ -44,10 +40,10 @@ resource "azurerm_subnet" "subnet1" {
 
 
 resource "azurerm_container_app_environment" "container_app_environment" {
-  name                               = "cae-euw-${var.app_name}-${var.environment}"
-  resource_group_name                = module.resource_group.name
-  location                           = module.resource_group.location
-  infrastructure_resource_group_name = "${module.resource_group.name}-managed"
+  name                               = "cae-${var.location_short}-${var.app_name}-${var.environment}"
+  resource_group_name                = azurerm_resource_group.main.name
+  location                           = azurerm_resource_group.main.location
+  infrastructure_resource_group_name = "${azurerm_resource_group.main.name}-managed"
   workload_profile {
     name                  = "Consumption"
     workload_profile_type = "Consumption"
@@ -61,9 +57,9 @@ resource "azurerm_container_app_environment" "container_app_environment" {
 }
 
 resource "azurerm_container_app" "self_hosted_git_runner" {
-  name                         = "ca-euw-ghrunner-${var.environment}"
+  name                         = "ca-${var.location_short}-ghrunner-${var.environment}"
   container_app_environment_id = azurerm_container_app_environment.container_app_environment.id
-  resource_group_name          = module.resource_group.name
+  resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
   identity {
     type         = "UserAssigned"

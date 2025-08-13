@@ -16,12 +16,12 @@ jobs:
       IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME}}
       TF_VAR_acr_login_server: ${{ vars.REGISTRY_LOGIN_SERVER }}
       TF_VAR_acr_tag: ${{ vars.CONTAINER_IMAGE_NAME }}
-      TF_VAR_app_id: ${{ secrets.APP_ID }}
+      TF_VAR_app_id: ${{ vars.APP_ID }}
       TF_VAR_app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
       TF_VAR_runner_name: ${{ vars.RUNNER_NAME }}
       TF_VAR_gh_owner: ${{ vars.GH_OWNER }}
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_PROD }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID_PROD }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true 
 
@@ -44,13 +44,13 @@ jobs:
         run: |
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
-          terraform init -upgrade -backend-config=backend-prod.tfvars
+          terraform init -upgrade -backend-config=backend.tfvars
 
       - name: Validate Terraform
         run: terraform validate
 
       - name: Plan Terraform
-        run: terraform plan -var-file=env/prod.tfvars 
+        run: terraform plan -var-file=env/example.tfvars 
         
 
   terraform_apply_prod:
@@ -63,12 +63,12 @@ jobs:
       IMAGE_NAME: ${{ vars.CONTAINER_IMAGE_NAME}}
       TF_VAR_acr_login_server: ${{ vars.REGISTRY_LOGIN_SERVER }}
       TF_VAR_acr_tag: ${{ vars.CONTAINER_IMAGE_NAME }}
-      TF_VAR_app_id: ${{ secrets.APP_ID }}
+      TF_VAR_app_id: ${{ vars.APP_ID }}
       TF_VAR_app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
       TF_VAR_runner_name: ${{ vars.RUNNER_NAME }}
       TF_VAR_gh_owner: ${{ vars.GH_OWNER }}
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID_PROD }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID_PROD }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true 
 
@@ -95,7 +95,7 @@ jobs:
         run: |
           eval `ssh-agent -s`
           ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
-          terraform init -upgrade -backend-config=backend-prod.tfvars
+          terraform init -upgrade -backend-config=backend.tfvars
 
       - name: Apply Terraform 
-        run : terraform apply -var-file=env/prod.tfvars -auto-approve 
+        run : terraform apply -var-file=env/example.tfvars -auto-approve 
