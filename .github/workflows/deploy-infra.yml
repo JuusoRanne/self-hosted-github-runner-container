@@ -1,4 +1,4 @@
-name: Deploy Infrastructure Prod
+name: Deploy Infrastructure 
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  terraform_plan_prod:
+  terraform_plan:
     runs-on: ubuntu-latest
 
     env:
@@ -53,8 +53,8 @@ jobs:
         run: terraform plan -var-file=env/example.tfvars 
         
 
-  terraform_apply_prod:
-    needs: terraform_plan_prod
+  terraform_apply:
+    needs: terraform_plan
     runs-on: ubuntu-latest
 
 
