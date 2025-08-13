@@ -24,13 +24,8 @@ variable "tags" {
   description = "A map of tags to assign to resources"
   type = object({
     application_purpose = string
-    business_owner      = string
-    cost_centre         = number
     creator             = string
     environment         = string
-    owner               = string
-    partner             = string
-    project_name        = string
   })
 }
 
