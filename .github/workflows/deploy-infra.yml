@@ -43,7 +43,6 @@ jobs:
       - name: Initialize Terraform
         run: |
           eval `ssh-agent -s`
-          ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
           terraform init -upgrade -backend-config=backend.tfvars
 
       - name: Validate Terraform
@@ -94,7 +93,6 @@ jobs:
       - name: Initialize Terraform
         run: |
           eval `ssh-agent -s`
-          ssh-add - <<< "${{ secrets.ACTIONS_DEPLOY_KEY_PRIVATE }}"
           terraform init -upgrade -backend-config=backend.tfvars
 
       - name: Apply Terraform 
